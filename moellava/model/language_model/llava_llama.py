@@ -19,32 +19,29 @@ import torch
 import torch.nn as nn
 
 from transformers import AutoConfig, AutoModelForCausalLM, \
-                         LlamaConfig, LlamaModel, LlamaForCausalLM
-
+                         GPT2LMHeadModel, GPT2Config, PreTrainedModel
 from transformers.modeling_outputs import CausalLMOutputWithPast
-
 from ..llava_arch import LlavaMetaModel, LlavaMetaForCausalLM
-import torch.distributed as dist
 
 
-class LlavaLlamaConfig(LlamaConfig):
-    model_type = "llava_llama"
+class LlavaLlamaConfig(GPT2Config):
+    model_type = "llava-jp"
 
 
-class LlavaLlamaModel(LlavaMetaModel, LlamaModel):
+class LlavaLlamaModel(LlavaMetaModel, PreTrainedModel):
     config_class = LlavaLlamaConfig
 
-    def __init__(self, config: LlamaConfig):
+    def __init__(self, config: GPT2Config):
         super(LlavaLlamaModel, self).__init__(config)
 
 
-class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
+class LlavaLlamaForCausalLM(GPT2LMHeadModel, LlavaMetaForCausalLM):
     config_class = LlavaLlamaConfig
+    base_model = "gpt2"
 
     def __init__(self, config):
-        super(LlamaForCausalLM, self).__init__(config)
+        super(LlavaLlamaForCausalLM, self).__init__(config)
         self.model = LlavaLlamaModel(config)
-        self.pretraining_tp = config.pretraining_tp
         self.vocab_size = config.vocab_size
         self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
 
@@ -67,11 +64,9 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
         output_hidden_states: Optional[bool] = None,
         images: Optional[torch.FloatTensor] = None,
         return_dict: Optional[bool] = None,
+        **kwargs
     ) -> Union[Tuple, CausalLMOutputWithPast]:
 
-        # import ipdb
-        # ipdb.set_trace()
-        # print(f'rank {dist.get_rank()}', 'before prepare_inputs_labels_for_multimodal')
         if inputs_embeds is None:
             (
                 input_ids,
@@ -89,9 +84,7 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
                 images
             )
 
-        # dist.barrier()
-        # print(f'rank {dist.get_rank()}', 'after prepare_inputs_labels_for_multimodal')
-        out = super().forward(
+        return super().forward(
             input_ids=input_ids,
             attention_mask=attention_mask,
             position_ids=position_ids,
@@ -103,13 +96,8 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
             output_hidden_states=output_hidden_states,
             return_dict=return_dict
         )
-        # dist.barrier()
-        # print(f'rank {dist.get_rank()}', 'after LLM')
-        return out
 
     def prepare_inputs_for_generation(self, input_ids, past_key_values=None, inputs_embeds=None, **kwargs):
-    #     import ipdb
-    #     ipdb.set_trace()
         images = kwargs.pop("images", None)
         _inputs = super().prepare_inputs_for_generation(
             input_ids, past_key_values=past_key_values, inputs_embeds=inputs_embeds, **kwargs
@@ -118,5 +106,5 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
             _inputs['images'] = images
         return _inputs
 
-AutoConfig.register("llava_llama", LlavaLlamaConfig)
+AutoConfig.register("llava-jp", LlavaLlamaConfig)
 AutoModelForCausalLM.register(LlavaLlamaConfig, LlavaLlamaForCausalLM)

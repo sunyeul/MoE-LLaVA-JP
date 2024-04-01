@@ -2,10 +2,10 @@
 
 cd ~/workspace/MoE-LLaVA-JP
 export HF_DATASETS_OFFLINE=1
-# export TRANSFORMERS_OFFLINE=1
+export TRANSFORMERS_OFFLINE=1
 poetry run deepspeed moellava/train/train_mem.py \
     --deepspeed ./scripts/zero2.json \
-    --model_name_or_path llm-jp/llm-jp-1.3b-v1.0 \
+    --model_name_or_path dataset/llm-jp/llm-jp-1.3b-v1.0 \
     --version plain \
     --data_path dataset/LLaVA-CC3M-Pretrain-595K-JA.json \
     --image_folder dataset/LLaVA-CC3M-Pretrain-595K \

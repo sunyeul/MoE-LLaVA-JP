@@ -19,7 +19,7 @@ import torch
 import torch.nn as nn
 
 from transformers import AutoConfig, AutoModelForCausalLM, \
-                         GPT2LMHeadModel, GPT2Config, PreTrainedModel
+                         GPT2LMHeadModel, GPT2Config, GPT2Model
 from transformers.modeling_outputs import CausalLMOutputWithPast
 from ..llava_arch import LlavaMetaModel, LlavaMetaForCausalLM
 
@@ -28,7 +28,7 @@ class LlavaLlamaConfig(GPT2Config):
     model_type = "llava-jp"
 
 
-class LlavaLlamaModel(LlavaMetaModel, PreTrainedModel):
+class LlavaLlamaModel(LlavaMetaModel, GPT2Model):
     config_class = LlavaLlamaConfig
 
     def __init__(self, config: GPT2Config):

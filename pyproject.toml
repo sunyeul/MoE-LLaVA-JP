@@ -3,7 +3,6 @@ name = "moe-llava-jp"
 version = "0.1.0"
 description = ""
 authors = ["Junhyeong Kim <junhyeong.kim@brainpad.co.jp>"]
-readme = "README.md"
 packages = [
     { include = "moellava" },
 ]
@@ -22,11 +21,19 @@ accelerate = "^0.28.0"
 peft = "^0.10.0"
 bitsandbytes = "^0.43.0"
 tiktoken = "^0.6.0"
+packaging = "^24.0"
+click = "^8.1.7"
+mpi4py = "^3.1.6"
 
 [tool.poetry.group.dev.dependencies]
 deepspeed = "^0.14.0"
 ninja = "^1.11.1.1"
 tensorboardx = "^2.6.2.2"
+huggingface-hub = {extras = ["cli"], version = "^0.22.2"}
+ipykernel = "^6.29.4"
+ipywidgets = "^8.1.2"
+matplotlib = "^3.8.4"
+ipdb = "^0.13.13"
 
 [build-system]
 requires = ["poetry-core"]
